@@ -1,7 +1,7 @@
 # scientific-kotlin-calculator
 
 A small interactive scientific calculator written in Kotlin. It reads one
-expression per line from standard input and prints the result, until you
+expression per line from a standard input and prints the result until you
 press Enter on an empty line to quit.
 
 ## Running
