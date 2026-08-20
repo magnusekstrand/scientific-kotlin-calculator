@@ -18,30 +18,8 @@ class ScientificCalculator {
         CalculatorInputHandler.runInteractiveSession(::handleInput)
     }
 
-    fun handleInput(input: String): String {
-        val trimmed = input.trim()
-
-        val functionMatch = FUNCTION_PATTERN.matchEntire(trimmed)
-        if (functionMatch != null) {
-            val (name, argText) = functionMatch.destructured
-            val arg = argText.trim().toDoubleOrNull()
-                ?: throw IllegalArgumentException("Invalid argument: $argText")
-            return applyFunction(name, arg).toString()
-        }
-
-        val parts = trimmed.split(Regex("\\s+"))
-        if (parts.size < 3) {
-            return "Invalid input. Expected: value operator value, or function(value). Received: $input"
-        }
-
-        val lhs = parts[0].toDoubleOrNull()
-            ?: throw IllegalArgumentException("Invalid number: ${parts[0]}")
-        val operator = parts[1]
-        val rhs = parts[2].toDoubleOrNull()
-            ?: throw IllegalArgumentException("Invalid number: ${parts[2]}")
-
-        return calculate(lhs, operator, rhs).toString()
-    }
+    fun handleInput(input: String): String =
+        evaluateExpression(input.trim(), this).toString()
 
     fun calculate(lhs: Double, operator: String, rhs: Double): Double = when (operator) {
         "+" -> lhs + rhs
@@ -92,7 +70,6 @@ class ScientificCalculator {
     }
 
     companion object {
-        private val FUNCTION_PATTERN = Regex("""^([a-zA-Z]+)\((.+)\)$""")
         private val DEGREES_TO_RADIANS = PI / 180.0
     }
 }

@@ -60,10 +60,18 @@ class ScientificCalculatorTest {
     }
 
     @Test
-    fun `should return error for incomplete input`() {
+    fun `should evaluate a bare number as itself`() {
         val calculator = ScientificCalculator()
-        val result = calculator.handleInput("5")
-        assertEquals("Invalid input. Expected: value operator value, or function(value). Received: 5", result)
+        assertEquals("5.0", calculator.handleInput("5"))
+    }
+
+    @Test
+    fun `should throw exception for a trailing operator with no right-hand operand`() {
+        val calculator = ScientificCalculator()
+        val exception = assertFailsWith<IllegalArgumentException> {
+            calculator.handleInput("5 +")
+        }
+        assertEquals("Unexpected end of input", exception.message)
     }
 
     @Test
@@ -151,5 +159,51 @@ class ScientificCalculatorTest {
             calculator.handleInput("foo(1)")
         }
         assertEquals("Unknown function: foo", exception.message)
+    }
+
+    @Test
+    fun `should evaluate a function call nested inside a binary expression`() {
+        val calculator = ScientificCalculator()
+        assertEquals((2.0 + kotlin.math.ln(2.0)).toString(), calculator.handleInput("2 + ln(2)"))
+    }
+
+    @Test
+    fun `should evaluate a function call on the left-hand side of an operator`() {
+        val calculator = ScientificCalculator()
+        assertEquals("6.0", calculator.handleInput("sqrt(16) + 2"))
+    }
+
+    @Test
+    fun `should respect standard operator precedence`() {
+        val calculator = ScientificCalculator()
+        assertEquals("14.0", calculator.handleInput("2 + 3 * 4"))
+    }
+
+    @Test
+    fun `should support parentheses to override precedence`() {
+        val calculator = ScientificCalculator()
+        assertEquals("20.0", calculator.handleInput("4 * (2 + 3)"))
+    }
+
+    @Test
+    fun `should evaluate power as right-associative`() {
+        val calculator = ScientificCalculator()
+        // 2 ^ (3 ^ 2) = 2 ^ 9 = 512, not (2 ^ 3) ^ 2 = 64
+        assertEquals("512.0", calculator.handleInput("2 ^ 3 ^ 2"))
+    }
+
+    @Test
+    fun `should apply a leading unary minus`() {
+        val calculator = ScientificCalculator()
+        assertEquals("-2.0", calculator.handleInput("-5 + 3"))
+    }
+
+    @Test
+    fun `should propagate division by zero from a nested sub-expression`() {
+        val calculator = ScientificCalculator()
+        val exception = assertFailsWith<ArithmeticException> {
+            calculator.handleInput("1 + 10 / 0")
+        }
+        assertEquals("Division by zero", exception.message)
     }
 }
